@@ -3,6 +3,8 @@ use std::time::Duration;
 use psutil;
 use psutil::cpu::CpuPercentCollector;
 
+use systemstat::{System, Platform};
+
 const TIME: Duration = Duration::from_secs(1);
 
 
@@ -16,7 +18,11 @@ fn get_cpu(cpupc: &mut CpuPercentCollector) {
 
 fn main() {
 
+    // psutil
     let mut cpupc: CpuPercentCollector = CpuPercentCollector::new().unwrap();
+
+    // systemstat
+    let sys = System::new();
 
     thread::sleep(TIME);
 
@@ -31,4 +37,24 @@ fn main() {
     println!("Disk usage: {}%", usage_perc.percent().round());
 
     thread::sleep(TIME);
+    
+    match sys.cpu_load() {
+        Ok(cpu) => {
+            thread::sleep(TIME);
+            let usage = cpu.done().unwrap();
+            println!("{:?}", usage);
+        },
+        Err(give) => println!("\nI give up: {}", give)
+    }
+
+    match sys.cpu_load_aggregate()
+    {
+        Ok(cpuload) =>
+        {
+            thread::sleep(TIME);
+            let cpu_use = cpuload.done().unwrap();
+            println!("{:?}", cpu_use.user);
+        },
+        Err(err) => println!("\nERROR CPU LOAD: {}", err)
+    }
 }
