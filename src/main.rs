@@ -1,15 +1,13 @@
 mod performance;
+mod byteutils;
 
 use std::thread;
 use std::time::Duration;
-use psutil;
 use psutil::cpu::CpuPercentCollector;
-use psutil::{disk, memory};
-use psutil::disk::DiskUsage;
 use psutil::network::NetIoCountersCollector;
 
 const TIME: Duration = Duration::from_secs(1);
-
+const PER_CPU: bool = true;
 
 fn main() {
 
@@ -20,28 +18,37 @@ fn main() {
     // LOOK INTO: https://crates.io/crates/crossterm
 
     let mut cpupc: CpuPercentCollector = CpuPercentCollector::new().unwrap();
-    let mut netio = NetIoCountersCollector::default();
+    let mut netio: NetIoCountersCollector = NetIoCountersCollector::default();
 
     loop {
         thread::sleep(TIME);
 
-        //performance::cpu::get_cpu(&mut cpupc);
+        if PER_CPU {
+            let cpu_usage = performance::cpu::get_cpu_usage_per_thread(&mut cpupc);
+            for core in 0..cpu_usage.len() {
+                println!("CPU {} Usage: {}%", core + 1, cpu_usage[core]);
+            }
+        } else {
+            let cpu_usage = performance::cpu::get_cpu_usage(&mut cpupc);
+            println!("CPU Usage: {}%", cpu_usage);
+        }
 
-        let cpu_percents_percpu = cpupc.cpu_percent_percpu().unwrap();
-        let partitions = disk::partitions_physical().unwrap();
-        let disk_usages: Vec<DiskUsage> = partitions
-            .iter()
-            .map(|part| disk::disk_usage(part.mountpoint()).unwrap())
-            .collect();
-        let virtual_memory = memory::virtual_memory().unwrap();
-	    let swap_memory = memory::swap_memory().unwrap();
-        let net_io_counters = netio.net_io_counters().unwrap();
+        let disk_usage = performance::disk::get_disk_partitions_usage();
+        for partition in disk_usage {
+            println!("Disk {} Usage at {}: {} GB of {} GB Total",
+                     partition.volume, partition.mount, partition.usage, partition.total);
+        }
 
-        println!("cpu: {:?}", cpu_percents_percpu);
-        println!("disk: {:?}", disk_usages);
-        println!("ram: {:?}", virtual_memory);
-        println!("swap: {:?}", swap_memory);
-        println!("net: {:?}", net_io_counters);
+        let ram_usage = performance::mem::get_ram_usage();
+        println!("Ram Usage: {:.2} GB of {:.2} GB", ram_usage.usage, ram_usage.total);
+
+        let swap_usage = performance::mem::get_swap_usage();
+        println!("Swap Usage: {:.2} GB of {:.2} GB", swap_usage.usage, swap_usage.total);
+
+        let net_usage = performance::net::get_net_usage(&mut netio);
+        println!("Download Rate: {} {}", net_usage.download.value, net_usage.download.types);
+        println!("Upload Rate: {} {}", net_usage.upload.value, net_usage.upload.types);
+
         println!()
     }
 

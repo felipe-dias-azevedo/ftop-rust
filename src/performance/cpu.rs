@@ -1,12 +1,19 @@
-// TODO: temperature, usage, frequency (per cpu and total)
+// TODO: temperature, frequency (per cpu and total)
 
 use psutil::cpu::CpuPercentCollector;
 
-// FIXME: ITS AN EXAMPLE, REMOVE IT.
-pub fn get_cpu(cpupc: &mut CpuPercentCollector) {
-    //let count = psutil::cpu::cpu_count_physical();
+//const CORE_COUNT: usize = psutil::cpu::cpu_count_physical() as usize;
 
-    //println!("CPU cores: {}", count);
-    println!("CPU total usage: {}%", cpupc.cpu_percent().unwrap());
-    println!("CPU usage (cores): {:?}%", cpupc.cpu_percent_percpu().unwrap());
+pub fn get_cpu_usage_per_thread(cpupc: &mut CpuPercentCollector) -> Vec<u8> {
+
+    let usage = cpupc.cpu_percent_percpu().unwrap();
+
+    usage.iter()
+        .map(|val| val.round() as u8)
+        .collect()
+}
+
+pub fn get_cpu_usage(cpupc: &mut CpuPercentCollector) -> u8 {
+
+    cpupc.cpu_percent().unwrap() as u8
 }

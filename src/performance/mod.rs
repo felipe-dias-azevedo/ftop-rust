@@ -1,6 +1,6 @@
 pub(crate) mod cpu;
-mod mem;
-mod sysos;
-mod net;
-mod gpu;
-mod disk;
+pub(crate) mod mem;
+pub(crate) mod sysos;
+pub(crate) mod net;
+pub(crate) mod gpu;
+pub(crate) mod disk;
