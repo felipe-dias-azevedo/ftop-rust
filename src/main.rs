@@ -25,6 +25,12 @@ fn main() {
 
         thread::sleep(TIME);
 
+        let cpu_temperature = performance::cpu::get_cpu_temperature();
+        match cpu_temperature {
+            Some(temp) => println!("CPU Temperature: {} ºC", temp),
+            _ => {}
+        };
+
         if PER_CPU {
             let cpu_usage = performance::cpu::get_cpu_usage_per_thread(&mut cpupc);
             for core in 0..cpu_usage.len() {
