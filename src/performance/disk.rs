@@ -3,13 +3,13 @@
 use std::path::Path;
 use psutil::disk;
 use psutil::disk::{DiskUsage, Partition};
-use crate::console::byteutils::convert_bytes_to_giga_u64;
+use crate::console::byteutils::convert_bytes_to_giga_u32;
 
 pub struct DiskPartitionUsage {
     pub mount: String,
     pub volume: String,
-    pub total: u64,
-    pub usage: u64,
+    pub total: u32,
+    pub usage: u32,
     pub percent: f32
 }
 
@@ -23,8 +23,8 @@ pub fn get_disk_partitions_usage() -> Vec<DiskPartitionUsage> {
             DiskPartitionUsage {
                 mount: String::from(part.device()),
                 volume: String::from(part.mountpoint().to_str().unwrap_or("")),
-                total: convert_bytes_to_giga_u64(disk_usage.total()),
-                usage: convert_bytes_to_giga_u64(disk_usage.used()),
+                total: convert_bytes_to_giga_u32(disk_usage.total()),
+                usage: convert_bytes_to_giga_u32(disk_usage.used()),
                 percent: disk_usage.percent()
             }
         })
