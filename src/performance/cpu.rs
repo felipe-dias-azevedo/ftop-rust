@@ -1,6 +1,7 @@
 // TODO: temperature, frequency (per cpu and total)
 
 use psutil::cpu::CpuPercentCollector;
+use psutil::sensors::TemperatureSensor;
 
 //const CORE_COUNT: usize = psutil::cpu::cpu_count_physical() as usize;
 
@@ -16,4 +17,21 @@ pub fn get_cpu_usage_per_thread(cpupc: &mut CpuPercentCollector) -> Vec<u8> {
 pub fn get_cpu_usage(cpupc: &mut CpuPercentCollector) -> u8 {
 
     cpupc.cpu_percent().unwrap() as u8
+}
+
+pub fn get_cpu_temperature() -> Option<u8> {
+
+    let temperatures = psutil::sensors::temperatures();
+
+    let temps: Vec<&TemperatureSensor> = temperatures
+        .iter()
+        .filter(|&val| val.is_ok())
+        .map(|val| val.as_ref().unwrap())
+        .filter(|temp| temp.unit().contains("coretemp"))
+        .collect();
+
+    match temps.first() {
+        Some(&v) => Some(v.current().celsius().round() as u8),
+        _ => None
+    }
 }
