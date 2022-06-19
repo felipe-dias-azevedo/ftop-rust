@@ -11,7 +11,7 @@ pub fn convert_bytes_to_giga_f32(bytes: u64) -> f32 {
     bytes as f32 / 1_000_000_000.0
 }
 
-pub fn convert_value_from(bytes: u64) -> ByteValue {
+pub fn get_bytevalue_from(bytes: u64) -> ByteValue {
     match bytes {
         1_000 ..= 999_999 => ByteValue {
             value: bytes / 1_000,

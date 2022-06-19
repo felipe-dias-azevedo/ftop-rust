@@ -1,5 +1,5 @@
 use psutil::memory;
-use crate::byteutils::convert_bytes_to_giga_f32;
+use crate::console::byteutils::convert_bytes_to_giga_f32;
 
 pub struct MemoryUsage {
     pub percent: f32,

@@ -3,7 +3,7 @@
 use std::path::Path;
 use psutil::disk;
 use psutil::disk::{DiskUsage, Partition};
-use crate::byteutils::convert_bytes_to_giga_u64;
+use crate::console::byteutils::convert_bytes_to_giga_u64;
 
 pub struct DiskPartitionUsage {
     pub mount: String,
