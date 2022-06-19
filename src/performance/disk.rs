@@ -15,11 +15,18 @@ pub struct DiskPartitionUsage {
 
 pub fn get_disk_partitions_usage() -> Vec<DiskPartitionUsage> {
 
-    let partitions = get_disk_partitions();
+    if get_disk_partitions().is_none() {
+        return Vec::new();
+    }
+
+    let partitions = get_disk_partitions().unwrap();
 
     partitions.iter()
+        .filter(|part| get_disk_usage(part.mountpoint()).is_some())
         .map(|part| {
-            let disk_usage = get_disk_usage(part.mountpoint());
+
+            let disk_usage = get_disk_usage(part.mountpoint()).unwrap();
+
             DiskPartitionUsage {
                 mount: String::from(part.device()),
                 volume: String::from(part.mountpoint().to_str().unwrap_or("")),
@@ -31,10 +38,18 @@ pub fn get_disk_partitions_usage() -> Vec<DiskPartitionUsage> {
         .collect()
 }
 
-pub fn get_disk_partitions() -> Vec<Partition> {
-    disk::partitions_physical().unwrap()
+pub fn get_disk_partitions() -> Option<Vec<Partition>> {
+    let partitions = disk::partitions_physical();
+    match partitions {
+        Ok(v) => Some(v),
+        Err(_err) => None
+    }
 }
 
-pub fn get_disk_usage(mountpoint: &Path) -> DiskUsage {
-    disk::disk_usage(mountpoint).unwrap()
+pub fn get_disk_usage(mountpoint: &Path) -> Option<DiskUsage> {
+    let disk_usage = disk::disk_usage(mountpoint);
+    match disk_usage {
+        Ok(v) => Some(v),
+        Err(_err) => None
+    }
 }
