@@ -1,7 +1,9 @@
 // TODO: temperature, frequency (per cpu and total)
 
 use psutil::cpu::CpuPercentCollector;
+use psutil::Error;
 use psutil::sensors::TemperatureSensor;
+use crate::console;
 
 //const CORE_COUNT: usize = psutil::cpu::cpu_count_physical() as usize;
 
@@ -19,8 +21,23 @@ pub fn get_cpu_usage(cpupc: &mut CpuPercentCollector) -> u8 {
     cpupc.cpu_percent().unwrap() as u8
 }
 
+fn cpu_temperature() -> std::thread::Result<Vec<Result<TemperatureSensor, Error>>> {
+    console::panicutils::catch_unwind_silent(|| {
+        psutil::sensors::temperatures()
+    })
+}
+
 pub fn get_cpu_temperature() -> Option<u8> {
-    let temperatures = psutil::sensors::temperatures();
+    let temperatures = match cpu_temperature() {
+        Ok(v) => Some(v),
+        Err(_err) => None
+    };
+
+    if temperatures.is_none() {
+        return None
+    }
+
+    let temperatures = temperatures.unwrap();
 
     let temps: Vec<&TemperatureSensor> = temperatures
         .iter()
