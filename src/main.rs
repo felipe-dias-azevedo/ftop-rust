@@ -45,7 +45,7 @@ fn main() {
 
         let disk_usage = performance::disk::get_disk_partitions_usage();
         for partition in disk_usage {
-            println!("Disk {} Usage at {}: {} GB of {} GB Total",
+            println!("Disk {} Usage at {}: {:.1} GB of {:.1} GB Total",
                      partition.volume, partition.mount, partition.usage, partition.total);
         }
 
