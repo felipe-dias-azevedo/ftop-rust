@@ -11,7 +11,7 @@ pub fn get_cpu_usage_per_thread(cpupc: &mut CpuPercentCollector) -> Vec<u8> {
 
     let usage = cpupc.cpu_percent_percpu().unwrap();
 
-    usage.iter()
+    usage.into_iter()
         .map(|val| val.round() as u8)
         .collect()
 }
@@ -39,15 +39,16 @@ pub fn get_cpu_temperature() -> Option<u8> {
 
     let temperatures = temperatures.unwrap();
 
-    let temps: Vec<&TemperatureSensor> = temperatures
-        .iter()
-        .filter(|&val| val.is_ok())
-        .map(|val| val.as_ref().unwrap())
+    let temps: Vec<TemperatureSensor> = temperatures.into_iter()
+        .filter_map(|p| match p {
+            Ok(v) => Some(v),
+            _ => None
+        })
         .filter(|temp| temp.unit().contains("coretemp"))
         .collect();
 
     match temps.first() {
-        Some(&v) => Some(v.current().celsius().round() as u8),
+        Some(v) => Some(v.current().celsius().round() as u8),
         _ => None
     }
 }
