@@ -5,20 +5,18 @@ use psutil::Error;
 use psutil::sensors::TemperatureSensor;
 use crate::console;
 
-//const CORE_COUNT: usize = psutil::cpu::cpu_count_physical() as usize;
-
-pub fn get_cpu_usage_per_thread(cpupc: &mut CpuPercentCollector) -> Vec<u8> {
-
-    let usage = cpupc.cpu_percent_percpu().unwrap();
-
-    usage.into_iter()
-        .map(|val| val.round() as u8)
-        .collect()
+fn get_core_count() -> usize {
+    psutil::cpu::cpu_count_physical() as usize
 }
 
-pub fn get_cpu_usage(cpupc: &mut CpuPercentCollector) -> u8 {
+pub fn get_cpu_usage_per_thread(cpupc: &mut CpuPercentCollector) -> Vec<f32> {
 
-    cpupc.cpu_percent().unwrap() as u8
+    cpupc.cpu_percent_percpu().unwrap_or(vec![0.0; get_core_count()])
+}
+
+pub fn get_cpu_usage(cpupc: &mut CpuPercentCollector) -> f32 {
+
+    cpupc.cpu_percent().unwrap_or(0.0)
 }
 
 fn cpu_temperature() -> std::thread::Result<Vec<Result<TemperatureSensor, Error>>> {

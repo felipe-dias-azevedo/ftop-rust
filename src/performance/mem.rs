@@ -14,7 +14,7 @@ pub fn get_ram_usage() -> MemoryUsage {
     MemoryUsage {
         usage: convert_bytes_to_giga_f32(ram_usage.used()),
         total: convert_bytes_to_giga_f32(ram_usage.total()),
-        percent: ram_usage.percent().round()
+        percent: ram_usage.percent()
     }
 }
 
@@ -25,6 +25,6 @@ pub fn get_swap_usage() -> MemoryUsage {
     MemoryUsage {
         usage: convert_bytes_to_giga_f32(swap_usage.used()),
         total: convert_bytes_to_giga_f32(swap_usage.total()),
-        percent: swap_usage.percent().round()
+        percent: swap_usage.percent()
     }
 }
