@@ -18,7 +18,7 @@ pub fn get_ram_usage() -> Option<MemoryUsage> {
     let ram_usage = ram_usage.unwrap();
 
     let ram_usage = MemoryUsage {
-        usage: convert_bytes_to_giga_f32(ram_usage.used()),
+        usage: convert_bytes_to_giga_f32(ram_usage.total() - ram_usage.available()),
         total: convert_bytes_to_giga_f32(ram_usage.total()),
         percent: ram_usage.percent()
     };
