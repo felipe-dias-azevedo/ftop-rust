@@ -26,10 +26,7 @@ fn cpu_temperature() -> std::thread::Result<Vec<Result<TemperatureSensor, Error>
 }
 
 pub fn get_cpu_temperature() -> Option<u8> {
-    let temperatures = match cpu_temperature() {
-        Ok(v) => Some(v),
-        Err(_err) => None
-    };
+    let temperatures = cpu_temperature().ok();
 
     if temperatures.is_none() {
         return None

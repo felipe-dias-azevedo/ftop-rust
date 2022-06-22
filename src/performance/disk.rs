@@ -56,14 +56,10 @@ pub fn get_disk_partitions() -> Option<Vec<Partition>> {
 
             Some(partitions)
         },
-        Err(_err) => None
+        _ => None
     }
 }
 
 pub fn get_disk_usage(mountpoint: &Path) -> Option<DiskUsage> {
-    let disk_usage = disk::disk_usage(mountpoint);
-    match disk_usage {
-        Ok(v) => Some(v),
-        Err(_err) => None
-    }
+    disk::disk_usage(mountpoint).ok()
 }
