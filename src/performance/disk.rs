@@ -15,29 +15,31 @@ pub struct DiskPartitionUsage {
     pub percent: f32
 }
 
-fn get_disk_usage_by(partition: Partition) -> DiskPartitionUsage {
-    let disk_usage = get_disk_usage(partition.mountpoint()).unwrap();
-
-    DiskPartitionUsage {
-        mount: String::from(partition.device()),
-        volume: String::from(partition.mountpoint().to_str().unwrap_or("")),
-        total: convert_bytes_to_giga_f32(disk_usage.total()),
-        usage: convert_bytes_to_giga_f32(disk_usage.used()),
-        percent: disk_usage.percent()
-    }
-}
-
 pub fn get_disk_partitions_usage() -> Vec<DiskPartitionUsage> {
 
-    if get_disk_partitions().is_none() {
+    let disk_partitions = get_disk_partitions();
+
+    if disk_partitions.is_none() {
         return Vec::new();
     }
 
-    let partitions = get_disk_partitions().unwrap();
+    let partitions = disk_partitions.unwrap();
 
     partitions.into_iter()
-        .filter(|part| get_disk_usage(part.mountpoint()).is_some())
-        .map(get_disk_usage_by)
+        .filter_map(|partition| match get_disk_usage(partition.mountpoint()) {
+            Some(disk_usage) => {
+                let disk_partition_usage = DiskPartitionUsage {
+                    mount: String::from(partition.device()),
+                    volume: String::from(partition.mountpoint().to_str().unwrap_or("")),
+                    total: convert_bytes_to_giga_f32(disk_usage.total()),
+                    usage: convert_bytes_to_giga_f32(disk_usage.used()),
+                    percent: disk_usage.percent()
+                };
+
+                Some(disk_partition_usage)
+            },
+            _ => None
+        })
         .collect()
 }
 
@@ -45,16 +47,27 @@ pub fn get_disk_partitions() -> Option<Vec<Partition>> {
     let partitions = disk::partitions_physical();
 
     match partitions {
-        Ok(v) => {
-            if SYS != "macos" {
-                return Some(v)
+        Ok(v) => match SYS {
+            "macos" => {
+                let partitions = v.into_iter()
+                    .filter(| part | {
+                         part.mountpoint().to_str().unwrap_or("") == "/"
+                    })
+                    .collect();
+
+                Some(partitions)
             }
+            "linux" => {
+                let partitions = v.into_iter()
+                    .filter(|part| {
+                        !part.mountpoint().to_str().unwrap_or("")
+                            .contains("boot")
+                    })
+                    .collect();
 
-            let partitions = v.into_iter()
-                .filter(| part | "/" == part.mountpoint().to_str().unwrap_or(""))
-                .collect();
-
-            Some(partitions)
+                Some(partitions)
+            }
+            _ => Some(v)
         },
         _ => None
     }
