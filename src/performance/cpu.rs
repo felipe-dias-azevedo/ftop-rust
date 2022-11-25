@@ -44,7 +44,9 @@ pub fn get_cpu_temperature() -> Option<u8> {
             Ok(v) => Some(v),
             _ => None
         })
-        .filter(|temp| temp.unit().contains("coretemp"))
+        .filter(|temp| {
+            temp.unit().contains("coretemp") || temp.unit().contains("k10temp")
+        })
         .collect();
 
     match temps.first() {
