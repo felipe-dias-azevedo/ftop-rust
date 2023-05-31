@@ -1,4 +1,5 @@
 use sysinfo::{NetworkExt, System, SystemExt};
+use crate::monitor::Component;
 use crate::views::byteutils::get_bytevalue_from;
 
 use super::{MonitorData, MonitorKind};
@@ -23,11 +24,24 @@ impl NetworkData {
     }
 
     pub fn format(networks: Vec<NetworkData>) -> MonitorData {
-        let data = vec![];
+        let data = networks.into_iter().map(|network| {
+            vec![
+                Component {
+                    id: format!("download-{}", network.interface),
+                    name: format!("Download {} Interface", network.interface),
+                    data: get_bytevalue_from(network.download_total)
+                },
+                Component {
+                    id: format!("upload-{}", network.interface),
+                    name: format!("Upload {} Interface", network.interface),
+                    data: get_bytevalue_from(network.upload_total)
+                }
+            ]
+        }).collect::<Vec<Vec<Component>>>().concat();
 
         MonitorData {
             kind: MonitorKind::Network,
-            data,
+            data
         }
     }
 }

@@ -12,25 +12,27 @@ use sysinfo::System;
 
 use self::system::SystemData;
 
+#[derive(Clone)]
 pub struct MonitorData {
     pub kind: MonitorKind,
-    pub data: Vec<Component>
+    pub data: Vec<Component>,
 }
 
+#[derive(Clone)]
 pub struct Component {
     pub id: String,
     pub name: String,
-    pub data: String
+    pub data: String,
 }
 
-#[derive(Eq, PartialEq, EnumString, Display)]
+#[derive(Clone, Eq, PartialEq, EnumString, Display)]
 pub enum MonitorKind {
     Cpu,
     Ram,
     Disk,
     Network,
     Sensors,
-    Gpu
+    Gpu,
 }
 
 pub fn get_components_data(sys: &System, nvidia: &Result<Nvml, NvmlError>) -> Vec<MonitorData> {
@@ -42,6 +44,15 @@ pub fn get_components_data(sys: &System, nvidia: &Result<Nvml, NvmlError>) -> Ve
     let sensors = sensors::SensorData::format(sensors::SensorData::new());
 
     vec![cpu, ram, disk, network, sensors, gpu]
+}
+
+pub fn get_components_filtered(sys: &System, nvidia: &Result<Nvml, NvmlError>, filter: &Vec<String>) -> Vec<Component> {
+    let components = get_components_data(&sys, &nvidia);
+
+    let x = components.into_iter()
+        .map(|md| md.data).collect::<Vec<Vec<Component>>>();
+
+    x.concat().into_iter().filter(|components| filter.contains(&components.id)).collect()
 }
 
 pub fn get_system_data(sys: &System) -> SystemData {

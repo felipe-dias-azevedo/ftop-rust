@@ -1,4 +1,5 @@
 use sysinfo::{CpuExt, System, SystemExt};
+use crate::monitor::Component;
 
 use super::{MonitorData, MonitorKind};
 
@@ -32,7 +33,18 @@ impl CpuData {
     }
 
     pub fn format(&self) -> MonitorData {
-        let data = vec![];
+        let data = vec![
+            Component {
+                id: String::from("cpu"),
+                name: String::from("CPU Usage"),
+                data: format!("{:.2} %", self.usage_total)
+            },
+            Component {
+                id: String::from("cpu-freq"),
+                name: String::from("CPU Frequency"),
+                data: format!("{:.2} MHz", self.frequency_total)
+            }
+        ];
 
         MonitorData {
             kind: MonitorKind::Cpu,

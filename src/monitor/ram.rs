@@ -1,4 +1,6 @@
 use sysinfo::{System, SystemExt};
+use crate::monitor::Component;
+use crate::views::byteutils::{from_f64_to_giga};
 
 use super::{MonitorData, MonitorKind};
 
@@ -32,7 +34,38 @@ impl RamData {
     }
 
     pub fn format(&self) -> MonitorData {
-        let data = vec![];
+        let data = vec![
+            Component {
+                id: String::from("ram-usage"),
+                name: String::from("RAM Usage"),
+                data: format!("{:.2} GB", from_f64_to_giga(self.ram_used))
+            },
+            Component {
+                id: String::from("ram-total"),
+                name: String::from("RAM Total"),
+                data: format!("{:.2} GB", from_f64_to_giga(self.ram_total))
+            },
+            Component {
+                id: String::from("ram-available"),
+                name: String::from("RAM Available"),
+                data: format!("{:.2} GB", from_f64_to_giga(self.ram_available))
+            },
+            Component {
+                id: String::from("swap-usage"),
+                name: String::from("Swap Usage"),
+                data: format!("{:.2} GB", from_f64_to_giga(self.swap_used))
+            },
+            Component {
+                id: String::from("swap-total"),
+                name: String::from("Swap Total"),
+                data: format!("{:.2} GB", from_f64_to_giga(self.swap_total))
+            },
+            Component {
+                id: String::from("swap-available"),
+                name: String::from("Swap Available"),
+                data: format!("{:.2} GB", from_f64_to_giga(self.swap_available))
+            },
+        ];
 
         MonitorData {
             kind: MonitorKind::Ram,
