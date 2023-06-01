@@ -1,5 +1,6 @@
 use sysinfo::{DiskExt, ProcessExt, System, SystemExt, DiskKind};
-use crate::views::byteutils::get_bytevalue_from;
+use crate::monitor::Component;
+use crate::views::byteutils::{from_f64_to_giga, get_bytevalue_from};
 
 use super::{MonitorData, MonitorKind};
 
@@ -78,7 +79,51 @@ impl DisksData {
     }
 
     pub fn format(&self) -> MonitorData {
-        let data = vec![];
+        let disks_data = self.disks.iter().map(|disk| {
+            vec![
+                Component {
+                    id: format!("disk-{}-usage", disk.name),
+                    name: format!("Disk {} Usage", disk.name),
+                    data: format!("{:.2} %", (disk.space_used / disk.space_total) * 100f64),
+                },
+                Component {
+                    id: format!("disk-{}-used", disk.name),
+                    name: format!("Disk {} Used", disk.name),
+                    data: format!("{:.2} GB", from_f64_to_giga(disk.space_used)),
+                },
+                Component {
+                    id: format!("disk-{}-total", disk.name),
+                    name: format!("Disk {} Total", disk.name),
+                    data: format!("{:.2} GB", from_f64_to_giga(disk.space_total)),
+                },
+                Component {
+                    id: format!("disk-{}-available", disk.name),
+                    name: format!("Disk {} Available", disk.name),
+                    data: format!("{:.2} GB", from_f64_to_giga(disk.space_available)),
+                }
+            ]
+        }).collect::<Vec<Vec<Component>>>().concat();
+
+        let disks_general_data = vec![
+            Component {
+                id: String::from("disk-read"),
+                name: String::from("Disk Read Total"),
+                data: match self.read_total {
+                    Some(x) => get_bytevalue_from(x),
+                    _ => get_bytevalue_from(0)
+                },
+            },
+            Component {
+                id: String::from("disk-write"),
+                name: String::from("Disk Write Total"),
+                data: match self.write_total {
+                    Some(x) => get_bytevalue_from(x),
+                    _ => get_bytevalue_from(0)
+                },
+            }
+        ];
+
+        let data = vec![disks_data, disks_general_data].concat();
 
         MonitorData {
             kind: MonitorKind::Disk,

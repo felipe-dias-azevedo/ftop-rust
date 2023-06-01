@@ -49,10 +49,15 @@ pub fn get_components_data(sys: &System, nvidia: &Result<Nvml, NvmlError>) -> Ve
 pub fn get_components_filtered(sys: &System, nvidia: &Result<Nvml, NvmlError>, filter: &Vec<String>) -> Vec<Component> {
     let components = get_components_data(&sys, &nvidia);
 
-    let x = components.into_iter()
-        .map(|md| md.data).collect::<Vec<Vec<Component>>>();
+    let components = components.into_iter()
+        .map(|md| md.data).collect::<Vec<Vec<Component>>>().concat();
 
-    x.concat().into_iter().filter(|components| filter.contains(&components.id)).collect()
+    components.into_iter().filter(|components| {
+        filter.contains(&components.id) ||
+            filter.iter().filter(|f| {
+                f.contains("*") && components.id.starts_with(&f.replace("*", ""))
+            }).count() > 0
+    }).collect()
 }
 
 pub fn get_system_data(sys: &System) -> SystemData {
